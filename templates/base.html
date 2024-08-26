@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    {% block Heroblock %}
+    <link href="{% static 'images/Logo.png' %}" rel="icon">
+    {% endblock %}
+    <link href="{% static 'images/Logo.png' %}" rel="apple-touch-icon">
+    
+</head>
+
+<body>
+    <div >
+        {% block navbar %}
+     
+        {% endblock %}
+
+        {% block main %}
+
+        {% endblock %}
+    </div>
+
+
+    {% block footer %}
+
+    {% endblock %}
+
+
+
+</body>
+
+</html>
