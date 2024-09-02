@@ -10,7 +10,26 @@ class ParentsMeeting  (models.Model):
     phone_number = PhoneNumberField(region="US")  # Default region
     country_code=models.CharField(max_length=10,null=False,blank=False)
     creation_Date = models.DateField(auto_now_add=True)
-    
+    class Meta:
+        unique_together = ('email', 'phone_number','creation_Date')
+        
     def __str__(self) -> str:
         return self.full_name + ' - ' + self.email 
+
+
+class MeetingDetails (models.Model):
+    Title =models.CharField(max_length=100,null=False,blank=False)
+    meeting_date = models.DateTimeField(null=False,blank=False)
+    meeting_URL = models.URLField(null=False,blank=False)
+    creation_Date = models.DateField(auto_now_add=True)
     
+    def __str__(self) -> str:
+        return self.Title + ' - ' + str(self.meeting_date )
+
+class messageLog (models.Model):
+    To =models.CharField(max_length=30,null=False,blank=False)
+    Log = models.CharField(max_length=1000,null=False,blank=False)
+    creation_Date = models.DateField(auto_now_add=True)
+    
+    def __str__(self) -> str:
+        return self.To + ' - ' + str(self.creation_Date )
