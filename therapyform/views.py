@@ -50,7 +50,7 @@ def sendMassage(whatsNum):
     except TwilioRestException as error:
         messageLog.objects.create(To=whatsNum, Log=str(error))
         return f"Error: {error}"
-        
+
 
 
 def index(request):
@@ -62,13 +62,13 @@ def index(request):
                 phone_number = request.POST.get('phone_number')
                 country_code = request.POST.get('country_code', 'US')
                 email = request.POST.get('email')
-
+                print(country_code)
                 # Validate the phone number
                 try:
                     parsed_number = phonenumbers.parse(phone_number, country_code)
                     if phonenumbers.is_valid_number(parsed_number):
                         formatted_phone_number = phonenumbers.format_number(parsed_number, PhoneNumberFormat.E164)
-                        
+
                         # Save the form data to the database
                         form_obj = ParentsMeeting.objects.create(
                             full_name=full_name,
@@ -76,13 +76,13 @@ def index(request):
                             country_code=country_code,
                             email=email
                         )
-                        
+
                         # Send the message and check status
                         status = sendMassage(formatted_phone_number)
 
                         if status == 'failed':
                             raise Exception("Message sending failed, please try again.")
-                        
+
                         # If the message was successfully sent
                         messages.success(request, "Form Submitted Successfully, kindly check your whatsapp")
                         return render(request, 'index.html')
