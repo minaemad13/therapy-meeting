@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
-from celery import Celery
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -21,20 +20,20 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Initialize Celery
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapymeeting.settings')
-app = Celery('therapymeeting')
+# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'therapymeeting.settings')
+# app = Celery('therapymeeting')
 
-# Load task modules from all registered Django app configs.
-app.config_from_object('django.conf:settings', namespace='CELERY')
+# # Load task modules from all registered Django app configs.
+# app.config_from_object('django.conf:settings', namespace='CELERY')
 
-# Load task modules from all registered Django app configs.
-app.autodiscover_tasks()
+# # Load task modules from all registered Django app configs.
+# app.autodiscover_tasks()
 
-# Celery Beat settings
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+# # Celery Beat settings
+# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+# # Quick-start development settings - unsuitable for production
+# # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", default='django-insecure-_l3^-oidcw%30$*!e!ceol=nj^g1*52-_y_^+-m162##01@v8w')
@@ -55,9 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'phonenumber_field',
-    'therapyform',
-    'django_celery_beat'
-]
+    'therapyform']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -148,6 +145,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 TWILIO_ACCOUNT_SID= os.getenv("TWILIO_ACCOUNT_SID", default='TESTSID')
 TWILIO_ACCOUNT_TOKEN= os.getenv("TWILIO_ACCOUNT_TOKEN", default='TESTTOKEN')
-
-
-

@@ -10,63 +10,92 @@ import phonenumbers
 from phonenumbers import PhoneNumberFormat
 from twilio.rest import Client
 
+import time
+from twilio.base.exceptions import TwilioRestException
+from django.db import transaction
+
 def sendMassage(whatsNum):
     try:
         with transaction.atomic():
-            # client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
-            # get_last_url=MeetingDetails.objects.values_list('meeting_URL', flat=True).last()
-            # if get_last_url:
-            #     send_message = client.messages.create(
-            #     from_='whatsapp:+14155238886',
-            #     body=get_last_url,
-            #     to=f'whatsapp:{whatsNum}'
-            #     )
             client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
             message = client.messages.create(
-            content_sid="HX351c8a839e87a544ad9068de4ce3d33d",
-            from_='whatsapp:+201026267878',
-            to=f'whatsapp:{whatsNum}'
+                content_sid="HX351c8a839e87a544ad9068de4ce3d33d",
+                from_='whatsapp:+201026267878',
+                to=f'whatsapp:{whatsNum}'
             )
 
-            contxt={
-                "SID": message.sid,
-                "Status": message.status,
-                "From": message.from_,
-                "To": message.to,
-                "Body": message.body,
-                "Date Sent": message.date_sent,
-                "Error Code": message.error_code,
-                "Error Message": message.error_message
+            # Polling until the message status is 'sent', 'delivered', or 'failed'
+            while True:
+                time.sleep(2)  # Wait for 2 seconds before checking the status
+                message_status = client.messages(message.sid).fetch().status
+                if message_status in ['sent', 'delivered', 'failed']:
+                    break
+
+            # Collecting message details
+            message_details = client.messages(message.sid).fetch()
+            contxt = {
+                "SID": message_details.sid,
+                "Status": message_details.status,
+                "From": message_details.from_,
+                "To": message_details.to,
+                "Body": message_details.body,
+                "Date Sent": message_details.date_sent,
+                "Error Code": message_details.error_code,
+                "Error Message": message_details.error_message
             }
-            messageLog.objects.create(To=whatsNum , Log= str(contxt))
-    except Exception as error:
-        messageLog.objects.create(To=whatsNum , Log= str(error))
+            messageLog.objects.create(To=whatsNum, Log=contxt)
+
+            return message_status
+
+    except TwilioRestException as error:
+        messageLog.objects.create(To=whatsNum, Log=str(error))
+        return f"Error: {error}"
+        
+
 
 def index(request):
     if request.method == 'POST':
-        with transaction.atomic():
-            full_name = request.POST.get('full_name')
-            phone_number = request.POST.get('phone_number')
-            country_code = request.POST.get('country_code', 'US')
-            email =request.POST.get('email')
-            # Validate the phone number
-            try:
-                parsed_number = phonenumbers.parse(phone_number, country_code)
-                if phonenumbers.is_valid_number(parsed_number):
-                    formatted_phone_number = phonenumbers.format_number(parsed_number, PhoneNumberFormat.E164)
-                    form_obj = ParentsMeeting.objects.create(full_name=full_name, phone_number=formatted_phone_number
-                                            ,country_code=country_code
-                                            ,email=email)
-                    
-                    sendMassage(phone_number)
-                    messages.success(request, "Form Submitted Successfully.")
-                    render(request, 'index.html')
-                else:
-                    messages.error(request, "Invalid phone number for the given country code.")
-            except phonenumbers.NumberParseException:
-                messages.error(request, "Invalid phone number format.")
-            except Exception as error:
-                messages.error(request, "You Can't Submmit More than once Per Week ")
-    
+        try:
+            with transaction.atomic():
+                # Get form data
+                full_name = request.POST.get('full_name')
+                phone_number = request.POST.get('phone_number')
+                country_code = request.POST.get('country_code', 'US')
+                email = request.POST.get('email')
+
+                # Validate the phone number
+                try:
+                    parsed_number = phonenumbers.parse(phone_number, country_code)
+                    if phonenumbers.is_valid_number(parsed_number):
+                        formatted_phone_number = phonenumbers.format_number(parsed_number, PhoneNumberFormat.E164)
+                        
+                        # Save the form data to the database
+                        form_obj = ParentsMeeting.objects.create(
+                            full_name=full_name,
+                            phone_number=formatted_phone_number,
+                            country_code=country_code,
+                            email=email
+                        )
+                        
+                        # Send the message and check status
+                        status = sendMassage(formatted_phone_number)
+
+                        if status == 'failed':
+                            raise Exception("Message sending failed, please try again.")
+                        
+                        # If the message was successfully sent
+                        messages.success(request, "Form Submitted Successfully, kindly check your whatsapp")
+                        return render(request, 'index.html')
+
+                    else:
+                        messages.error(request, "Invalid phone number for the given country code.")
+                except phonenumbers.NumberParseException:
+                    messages.error(request, "Invalid phone number format, please try again.")
+
+        except Exception as error:
+            messages.error(request, str(error))
 
     return render(request, 'index.html')
+
+
+
