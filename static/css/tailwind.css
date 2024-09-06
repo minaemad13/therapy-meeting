@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.iti__search-input {
+    padding: 8px;
+}
+.custom_form {
+    background-image: url("{% static 'images/background-with-white-walls-plant.jpg' %}");
+    background-size: cover; /* Optional: ensures the image covers the entire element */
+    background-position: center; /* Optional: centers the image */
+    background-repeat: no-repeat; /* Optional: prevents the image from repeating */
+}
