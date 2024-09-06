@@ -1,34 +1,24 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% block Heroblock %}
-    <link href="{% static 'images/Logo.png' %}" rel="icon">
+    <link href="{% static 'images/Logo.png' %}" rel="icon" />
     {% endblock %}
-    <link href="{% static 'images/Logo.png' %}" rel="apple-touch-icon">
-    <link href="{% static 'css/output.css' %}" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@24.3.4/build/css/intlTelInput.css">
-</head>
+    <link href="{% static 'css/tailwind.css' %}" rel="stylesheet" />
+    <link href="{% static 'images/Logo.png' %}" rel="apple-touch-icon" />
+    <link href="{% static 'css/output.css' %}" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/intl-tel-input@24.3.4/build/css/intlTelInput.css"
+    />
+  </head>
 
-<body>
-        {% block navbar %}
-
-        {% endblock %}
-
-        {% block main %}
-
-        {% endblock %}
-
-
-    {% block footer %}
-
-    {% endblock %}
-
-
-
-</body>
-
+  <body>
+    {% block navbar %} {% endblock %} {% block main %} {% endblock %}
+    {% block footer %} {% endblock %}
+  </body>
 </html>
+

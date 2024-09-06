@@ -62,7 +62,6 @@ def index(request):
                 phone_number = request.POST.get('phone_number')
                 country_code = request.POST.get('country_code', 'US')
                 email = request.POST.get('email')
-                print(country_code)
                 # Validate the phone number
                 try:
                     parsed_number = phonenumbers.parse(phone_number, country_code)
