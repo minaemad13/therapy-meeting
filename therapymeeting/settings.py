@@ -92,13 +92,26 @@ WSGI_APPLICATION = 'therapymeeting.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
+DATABASES = {
+  'default': {
+    'ENGINE': 'django.db.backends.postgresql',
+    'NAME':'therapy',
+    'USER': 'therapy_owner',
+    'PASSWORD': 'vLBWAGPwd78u',
+    'HOST':'ep-holy-snowflake-a4adqmm7.us-east-1.aws.neon.tech',
+    'PORT':  5432,
+    'OPTIONS': {
+      'sslmode': 'require',
+    },
+  }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
