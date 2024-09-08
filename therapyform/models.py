@@ -5,13 +5,13 @@ from phonenumber_field.modelfields import PhoneNumberField
 # Create your models here.
 
 class ParentsMeeting  (models.Model):
-    full_name =models.CharField(max_length=100,null=False,blank=False)
-    email = models.EmailField(max_length=100,null=False,blank=False)
-    phone_number = PhoneNumberField(region="US")  # Default region
-    country_code=models.CharField(max_length=10,null=False,blank=False)
+    full_name =models.CharField(max_length=100,null=False,blank=False ,default='From File')
+    email = models.EmailField(max_length=100,null=False,blank=False ,default='default@default.com')
+    phone_number = PhoneNumberField(region="JO")  # Default region
+    country_code=models.CharField(max_length=10,null=False,blank=False,default='JO')
     creation_Date = models.DateField(auto_now_add=True)
-    class Meta:
-        unique_together = ('email', 'phone_number','creation_Date')
+    # class Meta:
+    #     unique_together = ('email', 'phone_number','creation_Date')
         
     def __str__(self) -> str:
         return self.full_name + ' - ' + self.email 

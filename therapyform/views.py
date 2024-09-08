@@ -51,6 +51,44 @@ def sendMassage(whatsNum):
         messageLog.objects.create(To=whatsNum, Log=str(error))
         return f"Error: {error}"
 
+def sendAlertMassage(whatsNum):
+    try:
+        with transaction.atomic():
+            client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
+            message = client.messages.create(
+                content_sid="HX351c8a839e87a544ad9068de4ce3d33d",
+                from_='whatsapp:+201007477581',
+                to=f'whatsapp:{whatsNum}'
+            )
+
+            # Polling until the message status is 'sent', 'delivered', or 'failed'
+            while True:
+                time.sleep(2)  # Wait for 2 seconds before checking the status
+                message_status = client.messages(message.sid).fetch().status
+                if message_status in ['sent', 'delivered', 'failed']:
+                    break
+
+            # Collecting message details
+            message_details = client.messages(message.sid).fetch()
+            contxt = {
+                "SID": message_details.sid,
+                "Status": message_details.status,
+                "From": message_details.from_,
+                "To": message_details.to,
+                "Body": message_details.body,
+                "Date Sent": message_details.date_sent,
+                "Error Code": message_details.error_code,
+                "Error Message": message_details.error_message
+            }
+            messageLog.objects.create(To=whatsNum, Log=contxt)
+
+            return message_status
+
+    except TwilioRestException as error:
+        messageLog.objects.create(To=whatsNum, Log=str(error))
+        return f"Error: {error}"
+
+
 
 
 def index(request):
