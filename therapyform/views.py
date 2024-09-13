@@ -19,7 +19,7 @@ def sendMassage(whatsNum):
         with transaction.atomic():
             client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
             message = client.messages.create(
-                content_sid="HX351c8a839e87a544ad9068de4ce3d33d",
+                content_sid="HXc5e2d6221f2b4909692a9c04fc3d775b",
                 from_='whatsapp:+201007477581',
                 to=f'whatsapp:{whatsNum}'
             )
