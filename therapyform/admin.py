@@ -1,6 +1,6 @@
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
-from therapyform.views import sendMassage
+from therapyform.views import sendAlertMassage, sendMassage
 from .resource import ParentsMeetingResource
 from .models import MeetingDetails ,ParentsMeeting, messageLog
 from django.contrib import messages
@@ -35,7 +35,7 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
         for obj in queryset:
             if obj.phone_number:
                 # Call the sendMassage function and wait until the message is processed
-                status = sendMassage(obj.phone_number)
+                status = sendAlertMassage(obj.phone_number)
 
                 # Optional: Show a success message in the admin interface for each processed message
                 if status in ['sent', 'delivered']:
