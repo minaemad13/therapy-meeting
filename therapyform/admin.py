@@ -16,35 +16,44 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
     list_display = ('full_name', 'phone_number', 'email', 'creation_Date')
     list_filter = (('creation_Date', DateRangeFilter),)
     search_fields = ('full_name', 'phone_number', 'email')
-    actions = ['send_meeting_link','send_alert']
+    actions = ['send_meeting_link', 'send_alert']
 
     def send_meeting_link(self, request, queryset):
-        for obj in queryset:
-            if obj.phone_number:
-                # Call the sendMassage function and wait until the message is processed
-                status = sendMassage(obj.phone_number)
+        # Define batch size
+        batch_size = 10  # Process 10 rows at a time
+        queryset = list(queryset)  # Convert queryset to a list to slice it
 
-                # Optional: Show a success message in the admin interface for each processed message
-                if status in ['sent', 'delivered']:
-                    self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) was successfully sent.")
-                elif status == 'failed':
-                    self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
+        for i in range(0, len(queryset), batch_size):
+            batch = queryset[i:i + batch_size]  # Process 10 records in each batch
+            for obj in batch:
+                if obj.phone_number:
+                    # Call the sendMassage function and check status
+                    status = sendMassage(obj.phone_number)
+
+                    if status in ['sent', 'delivered']:
+                        self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) was successfully sent.")
+                    elif status == 'failed':
+                        self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
 
     send_meeting_link.short_description = "Send WhatsApp Meeting Link to Selected Users"
-    def send_alert(self, request, queryset):
-        for obj in queryset:
-            if obj.phone_number:
-                # Call the sendMassage function and wait until the message is processed
-                status = sendAlertMassage(obj.phone_number)
 
-                # Optional: Show a success message in the admin interface for each processed message
-                if status in ['sent', 'delivered']:
-                    self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) was successfully sent.")
-                elif status == 'failed':
-                    self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
+    def send_alert(self, request, queryset):
+        # Define batch size
+        batch_size = 10  # Process 10 rows at a time
+        queryset = list(queryset)  # Convert queryset to a list to slice it
+
+        for i in range(0, len(queryset), batch_size):
+            batch = queryset[i:i + batch_size]
+            for obj in batch:
+                if obj.phone_number:
+                    # Call the sendAlertMassage function and check status
+                    status = sendAlertMassage(obj.phone_number)
+
+                    if status in ['sent', 'delivered']:
+                        self.message_user(request, f"Alert to {obj.full_name} ({obj.phone_number}) was successfully sent.")
+                    elif status == 'failed':
+                        self.message_user(request, f"Alert to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
 
     send_alert.short_description = "Send Alert Message to Selected Users"
-    
-admin.site.register(ParentsMeeting,ParentsMeetingAdmin)
 admin.site.register(MeetingDetails) 
 admin.site.register(messageLog) 
