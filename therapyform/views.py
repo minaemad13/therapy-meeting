@@ -50,6 +50,9 @@ def sendMassage(whatsNum):
     except TwilioRestException as error:
         messageLog.objects.create(To=whatsNum, Log=str(error))
         return 'failed'
+    except Exception as e:
+        messageLog.objects.create(To=whatsNum, Log=str(e))
+        return 'failed'
 
 def sendAlertMassage(whatsNum):
     try:
@@ -87,6 +90,9 @@ def sendAlertMassage(whatsNum):
     except TwilioRestException as error:
         messageLog.objects.create(To=whatsNum, Log=str(error))
         return f"Error: {error}"
+    except Exception as e:
+        messageLog.objects.create(To=whatsNum, Log=str(e))
+        return 'failed'
 
 
 
