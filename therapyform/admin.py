@@ -17,8 +17,12 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
     list_display = ('full_name', 'phone_number', 'email', 'creation_Date')
     list_filter = (('creation_Date', DateRangeFilter),)
     search_fields = ('full_name', 'phone_number', 'email')
-    actions = ['send_meeting_link', 'send_alert']
+    actions = ['send_meeting_link', 'send_alert','test_conn']
 
+    def test_conn(self, request, queryset):
+       time.sleep(4)
+
+    test_conn.short_description = "test_conn"
     def send_meeting_link(self, request, queryset):
         # Define batch size
         batch_size = 10  # Process 10 rows at a time
