@@ -53,10 +53,10 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
                     if obj.phone_number:
                         # Call the sendAlertMassage function and check status
                         status = sendAlertMassage(obj.phone_number)
-                        if status in ['sent', 'delivered']:
-                            self.message_user(request, f"Alert to {obj.full_name} ({obj.phone_number}) was successfully sent.")
-                        elif status == 'failed':
-                            self.message_user(request, f"Alert to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
+                        if status.lower() in ['sent', 'delivered','read']:
+                            self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) was successfully sent.")
+                        if status.lower() in ['failed' ,'undelivered']:
+                            self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
                 except Exception as e:
                     self.message_user(request, f"An error occurred while sending alert to {obj.full_name} ({obj.phone_number}): {e}", level=messages.ERROR)
 
