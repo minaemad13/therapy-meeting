@@ -32,9 +32,9 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
                         # Call the sendMassage function and check status
                         status = sendMassage(obj.phone_number)
                         time.sleep(1)
-                        if status in ['sent', 'delivered']:
+                        if status.lower() in ['sent', 'delivered','read']:
                             self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) was successfully sent.")
-                        elif status == 'failed':
+                        if status.lower() in ['failed' ,'undelivered']:
                             self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
                 except Exception as e:
                     self.message_user(request, f"An error occurred while sending message to {obj.full_name} ({obj.phone_number}): {e}", level=messages.ERROR)
