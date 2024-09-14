@@ -20,7 +20,8 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
     actions = ['send_meeting_link', 'send_alert','test_conn']
 
     def test_conn(self, request, queryset):
-       time.sleep(4)
+        for obj in queryset:
+            time.sleep(4)
 
     test_conn.short_description = "test_conn"
     def send_meeting_link(self, request, queryset):
