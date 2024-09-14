@@ -26,9 +26,9 @@ def sendMassage(whatsNum):
 
             # Polling until the message status is 'sent', 'delivered', or 'failed'
             while True:
-                time.sleep(2.5)  # Wait for 2 seconds before checking the status
+                # time.sleep(2.5)  # Wait for 2 seconds before checking the status
                 message_status = client.messages(message.sid).fetch().status
-                if message_status.lower() in ['sent', 'delivered', 'failed' ,'undelivered','read']:
+                if message_status.lower() in [ 'delivered', 'failed' ,'undelivered','read']:
                     break
 
             # Collecting message details
@@ -66,9 +66,9 @@ def sendAlertMassage(whatsNum):
 
             # Polling until the message status is 'sent', 'delivered', or 'failed'
             while True:
-                time.sleep(2.5)  # Wait for 2 seconds before checking the status
+                # time.sleep(2.5)  # Wait for 2 seconds before checking the status
                 message_status = client.messages(message.sid).fetch().status
-                if message_status.lower() in ['sent', 'delivered', 'failed' ,'undelivered','read']:
+                if message_status.lower() in [ 'delivered', 'failed' ,'undelivered','read']:
                     break
 
             # Collecting message details
