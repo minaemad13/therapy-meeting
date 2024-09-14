@@ -27,14 +27,17 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
         for i in range(0, len(queryset), batch_size):
             batch = queryset[i:i + batch_size]  # Process 10 records in each batch
             for obj in batch:
-                if obj.phone_number:
-                    # Call the sendMassage function and check status
-                    status = sendMassage(obj.phone_number)
-                    time.sleep(1)
-                    if status in ['sent', 'delivered']:
-                        self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) was successfully sent.")
-                    elif status == 'failed':
-                        self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
+                try:
+                    if obj.phone_number:
+                        # Call the sendMassage function and check status
+                        status = sendMassage(obj.phone_number)
+                        time.sleep(1)
+                        if status.lower() in ['sent', 'delivered','read']:
+                            self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) was successfully sent.")
+                        if status.lower() in ['failed' ,'undelivered']:
+                            self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
+                except Exception as e:
+                    self.message_user(request, f"An error occurred while sending message to {obj.full_name} ({obj.phone_number}): {e}", level=messages.ERROR)
 
     send_meeting_link.short_description = "Send WhatsApp Meeting Link to Selected Users"
 
@@ -46,16 +49,19 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
         for i in range(0, len(queryset), batch_size):
             batch = queryset[i:i + batch_size]
             for obj in batch:
-                if obj.phone_number:
-                    # Call the sendAlertMassage function and check status
-                    status = sendAlertMassage(obj.phone_number)
-
-                    if status in ['sent', 'delivered']:
-                        self.message_user(request, f"Alert to {obj.full_name} ({obj.phone_number}) was successfully sent.")
-                    elif status == 'failed':
-                        self.message_user(request, f"Alert to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
+                try:
+                    if obj.phone_number:
+                        # Call the sendAlertMassage function and check status
+                        status = sendAlertMassage(obj.phone_number)
+                        if status in ['sent', 'delivered']:
+                            self.message_user(request, f"Alert to {obj.full_name} ({obj.phone_number}) was successfully sent.")
+                        elif status == 'failed':
+                            self.message_user(request, f"Alert to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
+                except Exception as e:
+                    self.message_user(request, f"An error occurred while sending alert to {obj.full_name} ({obj.phone_number}): {e}", level=messages.ERROR)
 
     send_alert.short_description = "Send Alert Message to Selected Users"
+
 admin.site.register(ParentsMeeting,ParentsMeetingAdmin)
 admin.site.register(MeetingDetails) 
 admin.site.register(messageLog) 
