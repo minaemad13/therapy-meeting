@@ -5,6 +5,7 @@ from .resource import ParentsMeetingResource
 from .models import MeetingDetails ,ParentsMeeting, messageLog
 from django.contrib import messages
 from rangefilter.filters import DateRangeFilter
+import time
 
 
 admin.site.site_header = " Restart Your Self"         
@@ -29,7 +30,7 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
                 if obj.phone_number:
                     # Call the sendMassage function and check status
                     status = sendMassage(obj.phone_number)
-
+                    time.sleep(1)
                     if status in ['sent', 'delivered']:
                         self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) was successfully sent.")
                     elif status == 'failed':
