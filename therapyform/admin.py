@@ -55,5 +55,6 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
                         self.message_user(request, f"Alert to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
 
     send_alert.short_description = "Send Alert Message to Selected Users"
+admin.site.register(ParentsMeeting,ParentsMeetingAdmin)
 admin.site.register(MeetingDetails) 
 admin.site.register(messageLog) 
