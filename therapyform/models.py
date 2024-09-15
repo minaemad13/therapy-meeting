@@ -29,6 +29,10 @@ class MeetingDetails (models.Model):
 class messageLog (models.Model):
     To =models.CharField(max_length=30,null=False,blank=False)
     Log = models.CharField(max_length=1000,null=False,blank=False)
+    SID=models.CharField(max_length=80,null=False,blank=False)
+    Status= models.CharField(max_length=100,null=False,blank=False)
+    Error_Code= models.CharField(max_length=100,null=True,blank=True,default='0')
+    Error_Message= models.CharField(max_length=100,null=True,blank=True,default='Success')
     creation_Date = models.DateField(auto_now_add=True)
     
     def __str__(self) -> str:

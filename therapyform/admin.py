@@ -17,13 +17,9 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
     list_display = ('full_name', 'phone_number', 'email', 'creation_Date')
     list_filter = (('creation_Date', DateRangeFilter),)
     search_fields = ('full_name', 'phone_number', 'email')
-    actions = ['send_meeting_link', 'send_alert','test_conn']
+    actions = ['send_meeting_link', 'send_alert']
 
-    def test_conn(self, request, queryset):
-        for obj in queryset:
-            time.sleep(4)
 
-    test_conn.short_description = "test_conn"
     def send_meeting_link(self, request, queryset):
         # Define batch size
         batch_size = 10  # Process 10 rows at a time
@@ -68,5 +64,10 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
     send_alert.short_description = "Send Alert Message to Selected Users"
 
 admin.site.register(ParentsMeeting,ParentsMeetingAdmin)
+
+class messageLogAdmin(admin.ModelAdmin):
+    list_display = ('To','SID','Status', 'creation_Date')
+    list_filter = (('creation_Date', DateRangeFilter),'Status' )
+    search_fields = ('To','SID','Status')
+admin.site.register(messageLog,messageLogAdmin) 
 admin.site.register(MeetingDetails) 
-admin.site.register(messageLog) 
