@@ -6,6 +6,7 @@ from .models import MeetingDetails ,ParentsMeeting, messageLog
 from django.contrib import messages
 from rangefilter.filters import DateRangeFilter
 import time
+import threading
 
 
 admin.site.site_header = " Restart Your Self"         
@@ -31,12 +32,13 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
                 try:
                     if obj.phone_number:
                         # Call the sendMassage function and check status
-                        status = sendMassage(obj.phone_number)
-                        
-                        if status.lower() in ['sent', 'delivered','read']:
-                            self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) was successfully sent.")
-                        if status.lower() in ['failed' ,'undelivered']:
-                            self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
+                        threading.Thread(target=sendMassage, args=(obj.phone_number,)).start()
+                        # status = sendMassage(obj.phone_number)
+                        self.message_user(request, f"Send Massages Run in Background you can check the status of each massage from Message logs.")
+                        # if status.lower() in ['sent', 'delivered','read']:
+                        #     self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) was successfully sent.")
+                        # if status.lower() in ['failed' ,'undelivered']:
+                        #     self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
                 except Exception as e:
                     self.message_user(request, f"An error occurred while sending message to {obj.full_name} ({obj.phone_number}): {e}", level=messages.ERROR)
 
@@ -53,11 +55,14 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
                 try:
                     if obj.phone_number:
                         # Call the sendAlertMassage function and check status
-                        status = sendAlertMassage(obj.phone_number)
-                        if status.lower() in ['sent', 'delivered','read']:
-                            self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) was successfully sent.")
-                        if status.lower() in ['failed' ,'undelivered']:
-                            self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
+                        threading.Thread(target=sendAlertMassage, args=(obj.phone_number,)).start()
+                        # status = sendMassage(obj.phone_number)
+                        self.message_user(request, f"Send Massages Run in Background you can check the status of each massage from Message logs.")
+                        # status = sendAlertMassage(obj.phone_number)
+                        # if status.lower() in ['sent', 'delivered','read']:
+                        #     self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) was successfully sent.")
+                        # if status.lower() in ['failed' ,'undelivered']:
+                        #     self.message_user(request, f"Message to {obj.full_name} ({obj.phone_number}) failed.", level=messages.ERROR)
                 except Exception as e:
                     self.message_user(request, f"An error occurred while sending alert to {obj.full_name} ({obj.phone_number}): {e}", level=messages.ERROR)
 
