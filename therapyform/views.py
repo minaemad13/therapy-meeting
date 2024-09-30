@@ -150,6 +150,74 @@ def sendAlertMassage(whatsNum):
         return "failed"
 
 
+def sendFacebookGroup(whatsNum):
+    try:
+        with transaction.atomic():
+            client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
+            message = client.messages.create(
+                content_sid="HX84d03d774d51d628572bdcdf3e7ee284",
+                from_="whatsapp:+201007477581",
+                to=f"whatsapp:{whatsNum}",
+            )
+
+            # Polling until the message status is 'sent', 'delivered', or 'failed'
+            while True:
+                time.sleep(1)  # Wait for 2 seconds before checking the status
+                message_status = client.messages(message.sid).fetch().status
+                if message_status.lower() in [
+                    "delivered",
+                    "failed",
+                    "undelivered",
+                    "read",
+                ]:
+                    break
+
+            # Collecting message details
+            message_details = client.messages(message.sid).fetch()
+            contxt = {
+                "SID": message_details.sid,
+                "Status": message_details.status,
+                "From": message_details.from_,
+                "To": message_details.to,
+                "Body": message_details.body,
+                "Date Sent": message_details.date_sent,
+                "Error Code": message_details.error_code,
+                "Error Message": message_details.error_message,
+            }
+            messageLog.objects.create(
+                To=whatsNum,
+                Log=contxt,
+                SID=message_details.sid,
+                Status=message_details.status,
+                Error_Code=message_details.error_code,
+                Error_Message=message_details.error_message,
+            )
+
+            return message_status
+
+    except TwilioRestException as error:
+        messageLog.objects.create(
+            To=whatsNum,
+            Log=str(error),
+            SID=message_details.sid,
+            Status=message_details.status,
+            Error_Code=message_details.error_code,
+            Error_Message=message_details.error_message,
+        )
+
+        return f"Error: {error}"
+    except Exception as e:
+        messageLog.objects.create(
+            To=whatsNum,
+            Log=str(e),
+            SID=message_details.sid,
+            Status=message_details.status,
+            Error_Code=message_details.error_code,
+            Error_Message=message_details.error_message,
+        )
+        return "failed"
+
+
 def index(request):
     if request.method == "POST":
         try:
