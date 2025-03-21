@@ -20,7 +20,7 @@ def sendMassage(whatsNum):
         with transaction.atomic():
             client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
             message = client.messages.create(
-                content_sid="HXb209c9746a31dd057b0e45a6064c922c",
+                content_sid="HX4ecbb5c3612660096391c3d71d411714",
                 from_="whatsapp:+201007477581",
                 to=f"whatsapp:{whatsNum}",
             )
@@ -87,7 +87,7 @@ def sendAlertMassage(whatsNum):
         with transaction.atomic():
             client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
             message = client.messages.create(
-                content_sid="HXa70d3cd6b0b260c1810c8cc4c07ede33",
+                content_sid="HX8303a9c80b8790f0275aff4031390902",
                 from_="whatsapp:+201007477581",
                 to=f"whatsapp:{whatsNum}",
             )
