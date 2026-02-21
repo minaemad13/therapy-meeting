@@ -16,7 +16,9 @@ import requests
 import time
 from twilio.base.exceptions import TwilioRestException
 from django.db import transaction
-
+import os
+from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException
 
 def sendMassage(whatsNum):
     try:
@@ -153,12 +155,12 @@ def sendAlertMassage(whatsNum):
         return "failed"
 
 
-def sendFacebookGroup(whatsNum):
+def sendRamadanMsgGroup(whatsNum):
     try:
         with transaction.atomic():
             client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
             message = client.messages.create(
-                content_sid="HX84d03d774d51d628572bdcdf3e7ee284",
+                content_sid="HXb30e05fa9973841cbcca623be539d04c",
                 from_="whatsapp:+201007477581",
                 to=f"whatsapp:{whatsNum}",
             )
@@ -220,6 +222,93 @@ def sendFacebookGroup(whatsNum):
         )
         return "failed"
 
+
+from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException
+
+def sendSmsAlphanumeric(phoneNum, message_body, sender_id="Restart"):
+    # تعريف المتغيرات مبدئياً لتفادي خطأ (UnboundLocalError) في حال فشل الإرسال من البداية
+    msg_sid = "Failed-No-SID" # بدلاً من None
+    msg_status = "failed"
+    msg_error_code = 0 # أو أي رقم افتراضي يقبله حقل الأرقام لديك
+    msg_error_message = "Failed before contacting Twilio"
+    
+    phoneNum = str(phoneNum)
+    try:
+        with transaction.atomic():
+            # تهيئة الاتصال (تأكد من تعريف TWILIO_ACCOUNT_SID و TWILIO_AUTH_TOKEN في ملفك)
+            client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
+            # 1. إنشاء وإرسال الرسالة النصية باسم المُرسل
+            message = client.messages.create(
+                body=message_body,
+                from_="Restart", # استخدام اسم المرسل النصي
+                to=phoneNum
+            )
+            
+            msg_sid = message.sid
+            # 2. الاستعلام المتكرر (Polling) حتى تستقر حالة الرسالة
+            while True:
+                time.sleep(1)  # الانتظار لثانية واحدة
+                message_details = client.messages(msg_sid).fetch()
+                message_status = message_details.status
+                # حالات الـ SMS تختلف قليلاً عن الواتساب، أضفنا "sent" لأن بعض شبكات الاتصال لا ترجع حالة "delivered"
+                if message_status.lower() in [
+                    "delivered",
+                    "sent",
+                    "failed",
+                    "undelivered",
+                ]:
+                    break
+
+            # 3. تجميع تفاصيل الرسالة بعد استقرار حالتها
+            msg_status = message_details.status
+            msg_error_code = message_details.error_code
+            msg_error_message = message_details.error_message
+
+            contxt = {
+                "SID": msg_sid,
+                "Status": msg_status,
+                "From": message_details.from_,
+                "To": message_details.to,
+                "Body": message_details.body,
+                "Date Sent": message_details.date_sent,
+                "Error Code": msg_error_code,
+                "Error Message": msg_error_message,
+            }
+            # 4. تسجيل العملية في قاعدة البيانات (Log)
+            messageLog.objects.create(
+                To=phoneNum,
+                Log=contxt,
+                SID=msg_sid,
+                Status=msg_status,
+                Error_Code=msg_error_code,
+                Error_Message=msg_error_message,
+            )
+
+            return message_status
+
+    except TwilioRestException as error:
+        # تسجيل الخطأ الخاص بـ Twilio في قاعدة البيانات
+        messageLog.objects.create(
+            To=phoneNum,
+            Log=str(error),
+            SID=msg_sid,
+            Status=msg_status,
+            Error_Code=msg_error_code or error.code,
+            Error_Message=msg_error_message or error.msg,
+        )
+        return f"Error: {str(error)}"
+    except Exception as e:
+        # تسجيل أي أخطاء برمجية أخرى
+        messageLog.objects.create(
+            To=phoneNum,
+            Log=str(e),
+            SID=msg_sid,
+            Status=msg_status,
+            Error_Code=msg_error_code,
+            Error_Message=msg_error_message,
+        )
+        return "failed"
 
 
 def send_whatsapp_msg(phone, message=None, image_url=None, mimetype="image/jpeg", filename="image.jpg"):

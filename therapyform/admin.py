@@ -59,7 +59,7 @@ admin.site.index_title = "Welcome to Rstart admin panel"
 #                 try:
 #                     if obj.phone_number:
 #                         # Call the sendMassage function and check status
-#                         threading.Thread(target=sendFacebookGroup, args=(obj.phone_number,)).start()
+#                         threading.Thread(target=sendRamadanMsgGroup, args=(obj.phone_number,)).start()
 #                         # status = sendMassage(obj.phone_number)
 #                         self.message_user(request, f"Send Massages Run in Background you can check the status of each massage from Message logs.")
 #                         # if status.lower() in ['sent', 'delivered','read']:
@@ -96,6 +96,7 @@ admin.site.index_title = "Welcome to Rstart admin panel"
 #     send_alert.short_description = "Send Alert Message to Selected Users"
 
 # 1. Define your predefined messages here
+
 PREDEFINED_MESSAGES = {
     'meeting': """🌟 تأكيد حضور ورشة "كيف تتعامل مع المدمن حتى يقتنع بالعلاج" 🌟
 
@@ -152,7 +153,7 @@ class WhatsAppActionForm(ActionForm):
 # 3. Define a wrapper function for the background thread
 def background_whatsapp_task(phone, message):
     """Wrapper to call your WAHA function in a thread."""
-    send_whatsapp_msg(phone=phone, message=message)
+    sendSmsAlphanumeric(phoneNum=phone, message_body=message)
 
 class ParentsMeetingAdmin(ImportExportModelAdmin):
     resource_class = ParentsMeetingResource
