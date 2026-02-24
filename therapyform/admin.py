@@ -146,8 +146,8 @@ class WhatsAppActionForm(ActionForm):
     MESSAGE_CHOICES = [
         ('', '--- Select a Predefined Message ---'),
         ('meeting', 'Meeting Link'),
-        ('ramadan', 'Ramadan Group'),
-        ('alert', 'System Alert'),
+        ('ramadan', 'Ramadan Meeting Link'),
+        ('alert', 'Alert - Parents Group'),
     ]
     message_type = forms.ChoiceField(choices=MESSAGE_CHOICES, required=False)
 
@@ -197,7 +197,7 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
 
         self.message_user(request, "WhatsApp messages are processing in the background. Check logs for delivery status.")
 
-    send_predefined_whatsapp.short_description = "Send Selected WhatsApp Message"
+    send_predefined_whatsapp.short_description = "Send Selected SMS Message"
 
 admin.site.register(ParentsMeeting,ParentsMeetingAdmin)
 
