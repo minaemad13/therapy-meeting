@@ -20,207 +20,390 @@ import os
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 
+
 def sendMassage(whatsNum):
     try:
-        with transaction.atomic():
-            client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
-            message = client.messages.create(
-                content_sid="HXc085bd122cee48f9b59d00a4d9b395d8",
-                from_="whatsapp:+201007477581",
-                to=f"whatsapp:{whatsNum}",
-            )
+        # FIXED: Removed transaction.atomic() to prevent database locks on long API calls
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
+        message = client.messages.create(
+            content_sid="HXc085bd122cee48f9b59d00a4d9b395d8",
+            from_="whatsapp:+201007477581",
+            to=f"whatsapp:{whatsNum}",
+        )
 
-            # Polling until the message status is 'sent', 'delivered', or 'failed'
-            while True:
-                time.sleep(1)  # Wait for 2 seconds before checking the status
-                message_status = client.messages(message.sid).fetch().status
-                if message_status.lower() in [
-                    "delivered",
-                    "failed",
-                    "undelivered",
-                    "read",
-                ]:
-                    break
+        # FIXED: Added a max attempts break to prevent an infinite background loop
+        attempts = 0
+        while attempts < 15:
+            time.sleep(1)
+            message_status = client.messages(message.sid).fetch().status
+            if message_status.lower() in ["delivered", "failed", "undelivered", "read"]:
+                break
+            attempts += 1
 
-            # Collecting message details
-            message_details = client.messages(message.sid).fetch()
-            contxt = {
-                "SID": message_details.sid,
-                "Status": message_details.status,
-                "From": message_details.from_,
-                "To": message_details.to,
-                "Body": message_details.body,
-                "Date Sent": message_details.date_sent,
-                "Error Code": message_details.error_code,
-                "Error Message": message_details.error_message,
-            }
-            messageLog.objects.create(
-                To=whatsNum,
-                Log=contxt,
-                SID=message_details.sid,
-                Status=message_details.status,
-                Error_Code=message_details.error_code,
-                Error_Message=message_details.error_message,
-            )
-
-            return message_status
-
-    except TwilioRestException as error:
+        message_details = client.messages(message.sid).fetch()
+        contxt = {
+            "SID": message_details.sid,
+            "Status": message_details.status,
+            "From": message_details.from_,
+            "To": message_details.to,
+            "Body": message_details.body,
+            "Date Sent": message_details.date_sent,
+            "Error Code": message_details.error_code,
+            "Error Message": message_details.error_message,
+        }
         messageLog.objects.create(
             To=whatsNum,
-            Log=str(error),
+            Log=contxt,
             SID=message_details.sid,
             Status=message_details.status,
             Error_Code=message_details.error_code,
             Error_Message=message_details.error_message,
+        )
+        return message_status
+
+    except TwilioRestException as error:
+        # FIXED: Replaced message_details.sid with None since it doesn't exist on failure
+        messageLog.objects.create(
+            To=whatsNum,
+            Log=str(error),
+            SID=None, 
+            Status="failed",
+            Error_Code=error.code,
+            Error_Message=error.msg,
         )
         return "failed"
     except Exception as e:
         messageLog.objects.create(
             To=whatsNum,
             Log=str(e),
-            SID=message_details.sid,
-            Status=message_details.status,
-            Error_Code=message_details.error_code,
-            Error_Message=message_details.error_message,
+            SID=None,
+            Status="failed",
+            Error_Code=None,
+            Error_Message=str(e),
         )
         return "failed"
 
 
 def sendAlertMassage(whatsNum):
     try:
-        with transaction.atomic():
-            client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
-            message = client.messages.create(
-                content_sid="HX450859cbb03c9de8588dac4d610bf835",
-                from_="whatsapp:+201007477581",
-                to=f"whatsapp:{whatsNum}",
-            )
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
+        message = client.messages.create(
+            content_sid="HX450859cbb03c9de8588dac4d610bf835",
+            from_="whatsapp:+201007477581",
+            to=f"whatsapp:{whatsNum}",
+        )
 
-            # Polling until the message status is 'sent', 'delivered', or 'failed'
-            while True:
-                time.sleep(1)  # Wait for 2 seconds before checking the status
-                message_status = client.messages(message.sid).fetch().status
-                if message_status.lower() in [
-                    "delivered",
-                    "failed",
-                    "undelivered",
-                    "read",
-                ]:
-                    break
+        attempts = 0
+        while attempts < 15:
+            time.sleep(1)
+            message_status = client.messages(message.sid).fetch().status
+            if message_status.lower() in ["delivered", "failed", "undelivered", "read"]:
+                break
+            attempts += 1
 
-            # Collecting message details
-            message_details = client.messages(message.sid).fetch()
-            contxt = {
-                "SID": message_details.sid,
-                "Status": message_details.status,
-                "From": message_details.from_,
-                "To": message_details.to,
-                "Body": message_details.body,
-                "Date Sent": message_details.date_sent,
-                "Error Code": message_details.error_code,
-                "Error Message": message_details.error_message,
-            }
-            messageLog.objects.create(
-                To=whatsNum,
-                Log=contxt,
-                SID=message_details.sid,
-                Status=message_details.status,
-                Error_Code=message_details.error_code,
-                Error_Message=message_details.error_message,
-            )
-
-            return message_status
-
-    except TwilioRestException as error:
+        message_details = client.messages(message.sid).fetch()
+        contxt = {
+            "SID": message_details.sid,
+            "Status": message_details.status,
+            "From": message_details.from_,
+            "To": message_details.to,
+            "Body": message_details.body,
+            "Date Sent": message_details.date_sent,
+            "Error Code": message_details.error_code,
+            "Error Message": message_details.error_message,
+        }
         messageLog.objects.create(
             To=whatsNum,
-            Log=str(error),
+            Log=contxt,
             SID=message_details.sid,
             Status=message_details.status,
             Error_Code=message_details.error_code,
             Error_Message=message_details.error_message,
         )
+        return message_status
 
+    except TwilioRestException as error:
+        messageLog.objects.create(
+            To=whatsNum,
+            Log=str(error),
+            SID=None,
+            Status="failed",
+            Error_Code=error.code,
+            Error_Message=error.msg,
+        )
         return f"Error: {error}"
     except Exception as e:
         messageLog.objects.create(
             To=whatsNum,
             Log=str(e),
-            SID=message_details.sid,
-            Status=message_details.status,
-            Error_Code=message_details.error_code,
-            Error_Message=message_details.error_message,
+            SID=None,
+            Status="failed",
+            Error_Code=None,
+            Error_Message=str(e),
         )
         return "failed"
 
 
 def sendRamadanMsgGroup(whatsNum):
     try:
-        with transaction.atomic():
-            client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
-            message = client.messages.create(
-                content_sid="HXb30e05fa9973841cbcca623be539d04c",
-                from_="whatsapp:+201007477581",
-                to=f"whatsapp:{whatsNum}",
-            )
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
+        message = client.messages.create(
+            content_sid="HXb30e05fa9973841cbcca623be539d04c",
+            from_="whatsapp:+201007477581",
+            to=f"whatsapp:{whatsNum}",
+        )
 
-            # Polling until the message status is 'sent', 'delivered', or 'failed'
-            while True:
-                time.sleep(1)  # Wait for 2 seconds before checking the status
-                message_status = client.messages(message.sid).fetch().status
-                if message_status.lower() in [
-                    "delivered",
-                    "failed",
-                    "undelivered",
-                    "read",
-                ]:
-                    break
+        attempts = 0
+        while attempts < 15:
+            time.sleep(1)
+            message_status = client.messages(message.sid).fetch().status
+            if message_status.lower() in ["delivered", "failed", "undelivered", "read"]:
+                break
+            attempts += 1
 
-            # Collecting message details
-            message_details = client.messages(message.sid).fetch()
-            contxt = {
-                "SID": message_details.sid,
-                "Status": message_details.status,
-                "From": message_details.from_,
-                "To": message_details.to,
-                "Body": message_details.body,
-                "Date Sent": message_details.date_sent,
-                "Error Code": message_details.error_code,
-                "Error Message": message_details.error_message,
-            }
-            messageLog.objects.create(
-                To=whatsNum,
-                Log=contxt,
-                SID=message_details.sid,
-                Status=message_details.status,
-                Error_Code=message_details.error_code,
-                Error_Message=message_details.error_message,
-            )
-
-            return message_status
+        message_details = client.messages(message.sid).fetch()
+        contxt = {
+            "SID": message_details.sid,
+            "Status": message_details.status,
+            "From": message_details.from_,
+            "To": message_details.to,
+            "Body": message_details.body,
+            "Date Sent": message_details.date_sent,
+            "Error Code": message_details.error_code,
+            "Error Message": message_details.error_message,
+        }
+        messageLog.objects.create(
+            To=whatsNum,
+            Log=contxt,
+            SID=message_details.sid,
+            Status=message_details.status,
+            Error_Code=message_details.error_code,
+            Error_Message=message_details.error_message,
+        )
+        return message_status
 
     except TwilioRestException as error:
         messageLog.objects.create(
             To=whatsNum,
             Log=str(error),
-            SID=message_details.sid,
-            Status=message_details.status,
-            Error_Code=message_details.error_code,
-            Error_Message=message_details.error_message,
+            SID=None,
+            Status="failed",
+            Error_Code=error.code,
+            Error_Message=error.msg,
         )
-
         return f"Error: {error}"
     except Exception as e:
         messageLog.objects.create(
             To=whatsNum,
             Log=str(e),
-            SID=message_details.sid,
-            Status=message_details.status,
-            Error_Code=message_details.error_code,
-            Error_Message=message_details.error_message,
+            SID=None,
+            Status="failed",
+            Error_Code=None,
+            Error_Message=str(e),
         )
         return "failed"
+
+# def sendMassage(whatsNum):
+#     try:
+#         with transaction.atomic():
+#             client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
+#             message = client.messages.create(
+#                 content_sid="HXc085bd122cee48f9b59d00a4d9b395d8",
+#                 from_="whatsapp:+201007477581",
+#                 to=f"whatsapp:{whatsNum}",
+#             )
+
+#             # Polling until the message status is 'sent', 'delivered', or 'failed'
+#             while True:
+#                 time.sleep(1)  # Wait for 2 seconds before checking the status
+#                 message_status = client.messages(message.sid).fetch().status
+#                 if message_status.lower() in [
+#                     "delivered",
+#                     "failed",
+#                     "undelivered",
+#                     "read",
+#                 ]:
+#                     break
+
+#             # Collecting message details
+#             message_details = client.messages(message.sid).fetch()
+#             contxt = {
+#                 "SID": message_details.sid,
+#                 "Status": message_details.status,
+#                 "From": message_details.from_,
+#                 "To": message_details.to,
+#                 "Body": message_details.body,
+#                 "Date Sent": message_details.date_sent,
+#                 "Error Code": message_details.error_code,
+#                 "Error Message": message_details.error_message,
+#             }
+#             messageLog.objects.create(
+#                 To=whatsNum,
+#                 Log=contxt,
+#                 SID=message_details.sid,
+#                 Status=message_details.status,
+#                 Error_Code=message_details.error_code,
+#                 Error_Message=message_details.error_message,
+#             )
+
+#             return message_status
+
+#     except TwilioRestException as error:
+#         messageLog.objects.create(
+#             To=whatsNum,
+#             Log=str(error),
+#             SID=message_details.sid,
+#             Status=message_details.status,
+#             Error_Code=message_details.error_code,
+#             Error_Message=message_details.error_message,
+#         )
+#         return "failed"
+#     except Exception as e:
+#         messageLog.objects.create(
+#             To=whatsNum,
+#             Log=str(e),
+#             SID=message_details.sid,
+#             Status=message_details.status,
+#             Error_Code=message_details.error_code,
+#             Error_Message=message_details.error_message,
+#         )
+#         return "failed"
+
+
+# def sendAlertMassage(whatsNum):
+#     try:
+#         with transaction.atomic():
+#             client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
+#             message = client.messages.create(
+#                 content_sid="HX450859cbb03c9de8588dac4d610bf835",
+#                 from_="whatsapp:+201007477581",
+#                 to=f"whatsapp:{whatsNum}",
+#             )
+
+#             # Polling until the message status is 'sent', 'delivered', or 'failed'
+#             while True:
+#                 time.sleep(1)  # Wait for 2 seconds before checking the status
+#                 message_status = client.messages(message.sid).fetch().status
+#                 if message_status.lower() in [
+#                     "delivered",
+#                     "failed",
+#                     "undelivered",
+#                     "read",
+#                 ]:
+#                     break
+
+#             # Collecting message details
+#             message_details = client.messages(message.sid).fetch()
+#             contxt = {
+#                 "SID": message_details.sid,
+#                 "Status": message_details.status,
+#                 "From": message_details.from_,
+#                 "To": message_details.to,
+#                 "Body": message_details.body,
+#                 "Date Sent": message_details.date_sent,
+#                 "Error Code": message_details.error_code,
+#                 "Error Message": message_details.error_message,
+#             }
+#             messageLog.objects.create(
+#                 To=whatsNum,
+#                 Log=contxt,
+#                 SID=message_details.sid,
+#                 Status=message_details.status,
+#                 Error_Code=message_details.error_code,
+#                 Error_Message=message_details.error_message,
+#             )
+
+#             return message_status
+
+#     except TwilioRestException as error:
+#         messageLog.objects.create(
+#             To=whatsNum,
+#             Log=str(error),
+#             SID=message_details.sid,
+#             Status=message_details.status,
+#             Error_Code=message_details.error_code,
+#             Error_Message=message_details.error_message,
+#         )
+
+#         return f"Error: {error}"
+#     except Exception as e:
+#         messageLog.objects.create(
+#             To=whatsNum,
+#             Log=str(e),
+#             SID=message_details.sid,
+#             Status=message_details.status,
+#             Error_Code=message_details.error_code,
+#             Error_Message=message_details.error_message,
+#         )
+#         return "failed"
+
+
+# def sendRamadanMsgGroup(whatsNum):
+#     try:
+#         with transaction.atomic():
+#             client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
+#             message = client.messages.create(
+#                 content_sid="HXb30e05fa9973841cbcca623be539d04c",
+#                 from_="whatsapp:+201007477581",
+#                 to=f"whatsapp:{whatsNum}",
+#             )
+
+#             # Polling until the message status is 'sent', 'delivered', or 'failed'
+#             while True:
+#                 time.sleep(1)  # Wait for 2 seconds before checking the status
+#                 message_status = client.messages(message.sid).fetch().status
+#                 if message_status.lower() in [
+#                     "delivered",
+#                     "failed",
+#                     "undelivered",
+#                     "read",
+#                 ]:
+#                     break
+
+#             # Collecting message details
+#             message_details = client.messages(message.sid).fetch()
+#             contxt = {
+#                 "SID": message_details.sid,
+#                 "Status": message_details.status,
+#                 "From": message_details.from_,
+#                 "To": message_details.to,
+#                 "Body": message_details.body,
+#                 "Date Sent": message_details.date_sent,
+#                 "Error Code": message_details.error_code,
+#                 "Error Message": message_details.error_message,
+#             }
+#             messageLog.objects.create(
+#                 To=whatsNum,
+#                 Log=contxt,
+#                 SID=message_details.sid,
+#                 Status=message_details.status,
+#                 Error_Code=message_details.error_code,
+#                 Error_Message=message_details.error_message,
+#             )
+
+#             return message_status
+
+#     except TwilioRestException as error:
+#         messageLog.objects.create(
+#             To=whatsNum,
+#             Log=str(error),
+#             SID=message_details.sid,
+#             Status=message_details.status,
+#             Error_Code=message_details.error_code,
+#             Error_Message=message_details.error_message,
+#         )
+
+#         return f"Error: {error}"
+#     except Exception as e:
+#         messageLog.objects.create(
+#             To=whatsNum,
+#             Log=str(e),
+#             SID=message_details.sid,
+#             Status=message_details.status,
+#             Error_Code=message_details.error_code,
+#             Error_Message=message_details.error_message,
+#         )
+#         return "failed"
 
 
 from twilio.rest import Client
