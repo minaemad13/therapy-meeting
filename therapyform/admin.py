@@ -22,7 +22,7 @@ class ParentsMeetingAdmin(ImportExportModelAdmin):
     list_display = ('full_name', 'phone_number', 'email', 'creation_Date')
     list_filter = (('creation_Date', DateRangeFilter),)
     search_fields = ('full_name', 'phone_number', 'email')
-    actions = ['send_meeting_link', 'send_alert','send_Ramadan_msg']
+    actions = ['send_meeting_link','send_Ramadan_msg' ,'send_alert']
 
 
     def send_meeting_link(self, request, queryset):
