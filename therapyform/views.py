@@ -148,7 +148,7 @@ def sendRamadanMsgGroup(whatsNum):
     try:
         client = Client(TWILIO_ACCOUNT_SID, TWILIO_ACCOUNT_TOKEN)
         message = client.messages.create(
-            content_sid="HXb30e05fa9973841cbcca623be539d04c",
+            content_sid="HX58291911eaef8744ed88447e9833d8d4",
             from_="whatsapp:+201007477581",
             to=f"whatsapp:{whatsNum}",
         )
